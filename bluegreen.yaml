@@ -1,0 +1,65 @@
+---
+# service (LB)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ktcloud-lb
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80  # 로드밸런서의 80/tcp 로 들어오면 (cluster ip's port : 80)
+    targetPort: 80  # 파드의 80번 포트로 접속한다. 어느 파드?
+  selector:  # 파드의 레이블(color: )
+    color: green
+---
+# deployment (blue)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ktcloud-blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      color: blue
+  template: # 여기에서부터 Pod 작성
+    metadata:
+      labels:
+        color: blue
+    spec:   # 여기에서 부터 컨테이너
+      containers:
+      - name: ktcloudctn-blue
+        image: brian24/ktcloudinfra:blue
+        resources: # limits : 최대  , requests : 최소 보장
+          limits:
+            cpu: "500m"     # 0.5 vCPU
+            memory: "64Mi"  # 64 MB
+        ports:
+        - containerPort: 80
+
+---
+# deployment (green)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ktcloud-green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      color: green
+  template: # 여기에서부터 Pod 작성
+    metadata:
+      labels:
+        color: green
+    spec:   # 여기에서 부터 컨테이너
+      containers:
+      - name: ktcloudctn-green
+        image: brian24/ktcloudinfra:green
+        resources: # limits : 최대  , requests : 최소 보장
+          limits:
+            cpu: "500m"     # 0.5 vCPU
+            memory: "64Mi"  # 64 MB
+        ports:
+        - containerPort: 80
+
